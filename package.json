@@ -1,0 +1,35 @@
+{
+  "name": "BlidinnaFucker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "assets": "copyfiles -u 1 src/**/*.html dist",
+    "build": "pnpm run clean && tsc -b && pnpm run assets",
+    "start": "pnpm run build && node .",
+    "watch": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.1.2",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.2",
+    "copyfiles": "^2.4.1"
+  },
+  "dependencies": {
+    "@types/dns-packet": "^5.6.5",
+    "express": "^5.2.1",
+    "patchright": "^1.60.2"
+  }
+}

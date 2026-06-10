@@ -1,0 +1,89 @@
+{
+  "log": {
+    "disabled": false,
+    "level": "debug"
+  },
+  "dns": {},
+  "inbounds": [
+    {
+      "type": "redirect",
+      "tag": "redirect-in",
+      "listen": "127.0.0.1",
+      "listen_port": 4025
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "inbound": "redirect-in",
+        "action": "sniff",
+        "timeout": "1s"
+      },
+      {
+        "inbound": ["redirect-in"],
+        "network": "tcp",
+        "protocol": ["tls", "http", "quic"],
+        "ip_cidr": ["10.0.0.0/24", "192.168.0.0/16", "127.0.0.1/32"],
+        "action": "route",
+        "outbound": "direct-out"
+      },
+      {
+        "inbound": ["redirect-in"],
+        "network": "tcp",
+        "protocol": ["tls", "http", "quic"],
+        "action": "route",
+        "outbound": "auto-outbound"
+      }
+    ]
+  },
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct-out"
+    },
+    {
+      "type": "urltest",
+      "tag": "auto-outbound",
+      "outbounds": ["hysteria-fl-1-outbound", "hysteria-pl-1-outbound"],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "15s",
+      "idle_timeout": "30m"
+    },
+    {
+      "type": "hysteria2",
+      "tag": "hysteria-fl-1-outbound",
+      "server": "fl-1.potatovpn.space",
+      "server_port": 443,
+      "up_mbps": 1000,
+      "down_mbps": 1000,
+      "obfs": {
+        "type": "salamander",
+        "password": "ce69e49d-e289-49a9-86b7-22c82dc4f2f8"
+      },
+      "password": "1417cc76-70a0-4bcb-acae-bef6740e2378",
+      "tls": {
+        "enabled": true,
+        "min_version": "1.2",
+        "max_version": "1.3"
+      }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "hysteria-pl-1-outbound",
+      "server": "pl-1.potatovpn.space",
+      "server_port": 443,
+      "up_mbps": 1000,
+      "down_mbps": 1000,
+      "obfs": {
+        "type": "salamander",
+        "password": "e4f2d69e-095e-4201-a67a-e56e13594789"
+      },
+      "password": "ccb73997-155f-448c-a723-8d3bd88ba483",
+      "tls": {
+        "enabled": true,
+        "min_version": "1.2",
+        "max_version": "1.3"
+      }
+    }
+  ]
+}
