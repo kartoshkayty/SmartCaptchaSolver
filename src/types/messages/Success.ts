@@ -1,8 +1,9 @@
-import { Message } from "../Message.js";
+class SuccessMessage {
+  public token: string;
 
-interface SuccessMessage {
-  type: Message.Success;
-  token: string;
+  constructor(token: string) {
+    this.token = token;
+  }
 }
 
-export type { SuccessMessage };
+export { SuccessMessage };

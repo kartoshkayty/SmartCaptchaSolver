@@ -1,8 +1,16 @@
-import { Message } from "../Message.js";
-
-interface ErrorMessage {
-  type: Message.Error;
-  error: string;
+enum ErrorType {
+  UNKNOWN,
+  UNSOLVABLE,
 }
 
-export type { ErrorMessage };
+class ErrorMessage {
+  public code: ErrorType;
+  public message: string;
+
+  constructor(code: ErrorType, message: string) {
+    this.code = code;
+    this.message = message;
+  }
+}
+
+export { ErrorMessage, ErrorType };

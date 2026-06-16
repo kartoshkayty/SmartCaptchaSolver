@@ -1,9 +1,11 @@
-import { Message } from "../Message.js";
+class SolveMessage {
+  public hostname: string;
+  public sitekey: string;
 
-interface SolveMessage {
-  type: Message.Solve;
-  sitekey: string;
-  hostname: string;
+  constructor(hostname: string, sitekey: string) {
+    this.hostname = hostname;
+    this.sitekey = sitekey;
+  }
 }
 
-export type { SolveMessage };
+export { SolveMessage };

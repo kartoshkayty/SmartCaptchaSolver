@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package bliddinafucker.captcha;
+
+message SolveRequest {
+  string sitekey = 1;
+  string hostname = 2;
+}
+
+message SuccessSolve {
+  string token = 1;
+}
+
+enum Error {
+  ERROR_UNSPECIFIED = 0;
+  ERROR_UNSOLVABLE = 1;
+  ERROR_ALREADY_SOLVING = 2;
+  ERROR_UNKNOWN = 3;
+}
+
+message ErrorSolve {
+  Error type = 1;
+  string message = 2;
+}
+
+message SolveResponse {
+  oneof result {
+    SuccessSolve success = 1;
+    ErrorSolve error = 2;
+  }
+}
+
+service CaptchaService {
+  rpc Solve(SolveRequest) returns (SolveResponse);
+}

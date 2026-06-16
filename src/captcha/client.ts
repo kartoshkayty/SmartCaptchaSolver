@@ -2,27 +2,39 @@ import { setTimeout } from "node:timers/promises";
 import { parentPort } from "node:worker_threads";
 import { chromium } from "patchright";
 import { Utils } from "./utils.js";
+import { UnsolvableError } from "../types/errors/UnsolvableError.js";
 import { SolveMessage } from "../types/messages/Solve.js";
-import { Message } from "../types/Message.js";
-import { ErrorMessage } from "../types/messages/Error.js";
+import { ErrorMessage, ErrorType } from "../types/messages/Error.js";
 import { SuccessMessage } from "../types/messages/Success.js";
 
 if (!parentPort) {
   throw new Error("Launched without worker!");
 }
 
-parentPort.once("message", async (message: SolveMessage) => {
-  if (message.type !== Message.Solve) {
-    throw new Error("Incorrect in message!");
+parentPort.once("message", async (message: unknown) => {
+  if (!(message instanceof SolveMessage)) {
+    throw new Error("Incorrect message!");
   }
 
   try {
     await solve(message);
   } catch (e) {
-    parentPort!.postMessage({
-      type: Message.Error,
-      error: e,
-    } as ErrorMessage);
+    if (e instanceof UnsolvableError) {
+      parentPort!.postMessage(
+        new ErrorMessage(ErrorType.UNSOLVABLE, e.message),
+      );
+
+      return;
+    }
+
+    if (e instanceof Error) {
+      parentPort!.postMessage(new ErrorMessage(ErrorType.UNKNOWN, e.message));
+      return;
+    }
+
+    parentPort!.postMessage(
+      new ErrorMessage(ErrorType.UNKNOWN, "Catch unknown content!"),
+    );
   }
 });
 
@@ -45,24 +57,28 @@ const solve = async (message: SolveMessage) => {
   await page.goto(`http://${message.hostname}:1488`);
   const utils = new Utils(page);
 
-  await utils.waitVisibility("BbLB6", 60_000);
-  console.log("Successfully waited checkbox!");
+  try {
+    await utils.waitVisibility("BbLB6", 60_000);
+    console.log("Successfully waited checkbox!");
 
-  const { width, height } = await page
-    .locator("#turnstile-widget")
-    .evaluate((el) => ({
-      width: el.clientWidth,
-      height: el.clientHeight,
-    }));
+    const { width, height } = await page
+      .locator("#turnstile-widget")
+      .evaluate((el) => ({
+        width: el.clientWidth,
+        height: el.clientHeight,
+      }));
 
-  const x = width / 10;
-  const y = height / 3;
+    const x = width / 10;
+    const y = height / 3;
 
-  await setTimeout(500);
+    await setTimeout(500);
 
-  await page.mouse.click(x, y);
+    await page.mouse.click(x, y);
 
-  await utils.waitVisibility("success", 60_000);
+    await utils.waitVisibility("success", 60_000);
+  } catch (e) {
+    throw new UnsolvableError();
+  }
 
   const token = await page.evaluate(() => {
     return document.documentElement.getAttribute("captcha-data");
@@ -70,8 +86,12 @@ const solve = async (message: SolveMessage) => {
 
   await context.close();
 
-  parentPort!.postMessage({
-    type: Message.Success,
-    token,
-  } as SuccessMessage);
+  if (token === null) {
+    parentPort!.postMessage(
+      new ErrorMessage(ErrorType.UNKNOWN, "returned token is null!"),
+    );
+    return;
+  }
+
+  parentPort!.postMessage(new SuccessMessage(token));
 };

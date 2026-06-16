@@ -1,3 +1,5 @@
 allowBuilds:
   better-sqlite3: true
+  grpc-tools: true
   impit: true
+  protobufjs: true
