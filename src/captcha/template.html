@@ -1,23 +1,35 @@
 <!doctype html>
 <html>
   <body style="margin: 0">
-    <script
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=_turnstileCb"
-      async
-      defer
-    ></script>
-
     <div style="max-width: max-content" id="turnstile-widget"></div>
 
     <script>
-      async function _turnstileCb() {
-        turnstile.render("#turnstile-widget", {
+      const ws = new WebSocket(`ws://${window.c_hostname}:1490/callback`);
+
+      ws.onopen = () => {
+        console.log("socket opened, loading captcha script...");
+
+        const script = document.createElement("script");
+        script.src =
+          "https://smartcaptcha.cloud.yandex.ru/captcha.js?render=onload&onload=onloadFunction";
+
+        document.body.appendChild(script);
+      };
+
+      function onloadFunction() {
+        if (!window.smartCaptcha) return;
+
+        const container = document.getElementById("turnstile-widget");
+
+        const widgetId = window.smartCaptcha.render(container, {
           sitekey: window.sitekey,
-          theme: "dark",
-          callback: async function (token) {
-            document.documentElement.setAttribute("captcha-data", token);
+          hl: "ru",
+          callback: (token) => {
+            ws.send(JSON.stringify({ event: "CALLBACK", token }));
           },
         });
+
+        setTimeout(() => ws.send(JSON.stringify({ event: "READY" })), 2_500);
       }
     </script>
   </body>

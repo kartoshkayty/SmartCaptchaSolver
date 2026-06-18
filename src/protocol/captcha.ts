@@ -58,6 +58,7 @@ export function errorToJSON(object: Error): string {
 export interface SolveRequest {
   sitekey: string;
   hostname: string;
+  proxy: string;
 }
 
 export interface SuccessSolve {
@@ -75,7 +76,7 @@ export interface SolveResponse {
 }
 
 function createBaseSolveRequest(): SolveRequest {
-  return { sitekey: "", hostname: "" };
+  return { sitekey: "", hostname: "", proxy: "" };
 }
 
 export const SolveRequest: MessageFns<SolveRequest> = {
@@ -85,6 +86,9 @@ export const SolveRequest: MessageFns<SolveRequest> = {
     }
     if (message.hostname !== "") {
       writer.uint32(18).string(message.hostname);
+    }
+    if (message.proxy !== "") {
+      writer.uint32(26).string(message.proxy);
     }
     return writer;
   },
@@ -112,6 +116,14 @@ export const SolveRequest: MessageFns<SolveRequest> = {
           message.hostname = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.proxy = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -125,6 +137,7 @@ export const SolveRequest: MessageFns<SolveRequest> = {
     return {
       sitekey: isSet(object.sitekey) ? globalThis.String(object.sitekey) : "",
       hostname: isSet(object.hostname) ? globalThis.String(object.hostname) : "",
+      proxy: isSet(object.proxy) ? globalThis.String(object.proxy) : "",
     };
   },
 
@@ -136,6 +149,9 @@ export const SolveRequest: MessageFns<SolveRequest> = {
     if (message.hostname !== "") {
       obj.hostname = message.hostname;
     }
+    if (message.proxy !== "") {
+      obj.proxy = message.proxy;
+    }
     return obj;
   },
 
@@ -146,6 +162,7 @@ export const SolveRequest: MessageFns<SolveRequest> = {
     const message = createBaseSolveRequest();
     message.sitekey = object.sitekey ?? "";
     message.hostname = object.hostname ?? "";
+    message.proxy = object.proxy ?? "";
     return message;
   },
 };

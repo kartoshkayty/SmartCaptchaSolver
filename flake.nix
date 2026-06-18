@@ -31,9 +31,50 @@
             stdenv.cc.cc.lib
             zlib
             openssl
-            gtk3
-            alsa-lib
             xorg.libX11
+            xorg.libxcb
+            xorg.libXcomposite
+            xorg.libXdamage
+            xorg.libXext
+            xorg.libXfixes
+            xorg.libXrandr
+            xorg.libXtst
+            xorg.libxshmfence
+            xorg.libXScrnSaver
+            libxkbcommon
+            mesa
+            libGL
+            vulkan-loader
+
+            # GTK / тема / рендеринг UI
+            glib
+            gtk3
+            cairo
+            pango
+            gdk-pixbuf
+            atk
+            at-spi2-atk
+            at-spi2-core
+            fontconfig
+            freetype
+
+            # системные сервисы
+            dbus
+            systemd          # libudev
+            cups             # печать
+            libnotify
+
+            # звук
+            alsa-lib
+            libpulseaudio
+
+            # разное, часто требуется
+            nss
+            nspr
+            expat
+            curl
+            libuuid
+            libgbm
             # добавляй сюда нужные .so
           ]);
 

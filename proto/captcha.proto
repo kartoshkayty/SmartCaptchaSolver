@@ -5,6 +5,7 @@ package bliddinafucker.captcha;
 message SolveRequest {
   string sitekey = 1;
   string hostname = 2;
+  string proxy = 3;
 }
 
 message SuccessSolve {

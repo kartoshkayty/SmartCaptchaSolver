@@ -45,29 +45,35 @@ export class CaptchaService implements CaptchaServiceImplementation {
 
     this.worker = new Worker(CaptchaService.worker_path);
     this.worker.postMessage(
-      new SolveMessage(request.hostname, request.sitekey),
+      new SolveMessage(request.hostname, request.sitekey, request.proxy),
     );
 
     const message = await new Promise((res) =>
       this.worker!.once("message", res),
     );
 
+    const sMessage = Object.assign(new SuccessMessage(""), message);
+    const eMessage = Object.assign(
+      new ErrorMessage(ErrorType.UNKNOWN, ""),
+      message,
+    );
+
     await this.worker.terminate();
 
-    if (message instanceof SuccessMessage) {
+    if (sMessage.token) {
       return {
-        success: { token: message.token },
+        success: { token: sMessage.token },
       };
     }
 
-    if (message instanceof ErrorMessage) {
+    if (eMessage.code !== undefined) {
       return {
         error: {
           type:
-            message.code === ErrorType.UNKNOWN
+            eMessage.code === ErrorType.UNKNOWN
               ? Error.ERROR_UNKNOWN
               : Error.ERROR_UNSOLVABLE,
-          message: message.message,
+          message: eMessage.message,
         },
       };
     }
