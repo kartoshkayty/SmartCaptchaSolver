@@ -63,6 +63,7 @@ new (class Client {
       },
 
       args: [
+        `--proxy-bypass-list=${message.hostname}`,
         `--host-resolver-rules=MAP ${message.hostname} 127.0.0.1`,
         `--disable-features=LocalNetworkAccessChecks,PrivateNetworkAccessChecks`,
       ],
@@ -138,17 +139,23 @@ new (class Client {
   private async onReady() {
     this.log("Challenge ready! Start solving...");
 
-    const { width, height } = await this.page
-      .locator("#turnstile-widget")
-      .evaluate((el) => ({
-        width: el.clientWidth,
-        height: el.clientHeight,
-      }));
+    // const { width, height } = await this.page
+    //   .locator("#turnstile-widget")
+    //   .evaluate((el) => ({
+    //     width: el.clientWidth,
+    //     height: el.clientHeight,
+    //   }));
 
-    const x = (width / 16) * 2;
-    const y = (height / 10) * 4;
+    // const x = (width / 16) * 2;
+    // const y = (height / 10) * 4;
 
-    await this.page.mouse.click(x, y);
+    // await this.page.mouse.click(x, y);
+
+    await this.page.mouse.move(36, 49);
+    await this.page.mouse.down();
+
+    await this.page.mouse.move(259, 37);
+    await this.page.mouse.up();
   }
 
   private log(message: string) {
