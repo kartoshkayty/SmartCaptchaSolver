@@ -3,6 +3,8 @@ import {
   CaptchaServiceImplementation,
   DeepPartial,
   Error,
+  HealthRequest,
+  HealthResponse,
   SolveRequest,
   SolveResponse,
 } from "../../protocol/captcha.js";
@@ -84,5 +86,12 @@ export class CaptchaService implements CaptchaServiceImplementation {
         message: "Unknown message type returned from client!",
       },
     };
+  }
+
+  public async health(
+    request: HealthRequest,
+    context: CallContext,
+  ): Promise<DeepPartial<HealthResponse>> {
+    return { ok: true };
   }
 }

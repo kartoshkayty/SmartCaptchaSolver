@@ -75,6 +75,13 @@ export interface SolveResponse {
   error?: ErrorSolve | undefined;
 }
 
+export interface HealthRequest {
+}
+
+export interface HealthResponse {
+  ok: boolean;
+}
+
 function createBaseSolveRequest(): SolveRequest {
   return { sitekey: "", hostname: "", proxy: "" };
 }
@@ -381,6 +388,107 @@ export const SolveResponse: MessageFns<SolveResponse> = {
   },
 };
 
+function createBaseHealthRequest(): HealthRequest {
+  return {};
+}
+
+export const HealthRequest: MessageFns<HealthRequest> = {
+  encode(_: HealthRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HealthRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHealthRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): HealthRequest {
+    return {};
+  },
+
+  toJSON(_: HealthRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<HealthRequest>): HealthRequest {
+    return HealthRequest.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<HealthRequest>): HealthRequest {
+    const message = createBaseHealthRequest();
+    return message;
+  },
+};
+
+function createBaseHealthResponse(): HealthResponse {
+  return { ok: false };
+}
+
+export const HealthResponse: MessageFns<HealthResponse> = {
+  encode(message: HealthResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ok !== false) {
+      writer.uint32(8).bool(message.ok);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HealthResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHealthResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.ok = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HealthResponse {
+    return { ok: isSet(object.ok) ? globalThis.Boolean(object.ok) : false };
+  },
+
+  toJSON(message: HealthResponse): unknown {
+    const obj: any = {};
+    if (message.ok !== false) {
+      obj.ok = message.ok;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HealthResponse>): HealthResponse {
+    return HealthResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HealthResponse>): HealthResponse {
+    const message = createBaseHealthResponse();
+    message.ok = object.ok ?? false;
+    return message;
+  },
+};
+
 export type CaptchaServiceDefinition = typeof CaptchaServiceDefinition;
 export const CaptchaServiceDefinition = {
   name: "CaptchaService",
@@ -394,15 +502,25 @@ export const CaptchaServiceDefinition = {
       responseStream: false,
       options: {},
     },
+    health: {
+      name: "Health",
+      requestType: HealthRequest as typeof HealthRequest,
+      requestStream: false,
+      responseType: HealthResponse as typeof HealthResponse,
+      responseStream: false,
+      options: {},
+    },
   },
 } as const;
 
 export interface CaptchaServiceImplementation<CallContextExt = {}> {
   solve(request: SolveRequest, context: CallContext & CallContextExt): Promise<DeepPartial<SolveResponse>>;
+  health(request: HealthRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HealthResponse>>;
 }
 
 export interface CaptchaServiceClient<CallOptionsExt = {}> {
   solve(request: DeepPartial<SolveRequest>, options?: CallOptions & CallOptionsExt): Promise<SolveResponse>;
+  health(request: DeepPartial<HealthRequest>, options?: CallOptions & CallOptionsExt): Promise<HealthResponse>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

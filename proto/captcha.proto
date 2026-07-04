@@ -31,6 +31,13 @@ message SolveResponse {
   }
 }
 
+message HealthRequest {}
+
+message HealthResponse {
+  bool ok = 1;
+}
+
 service CaptchaService {
   rpc Solve(SolveRequest) returns (SolveResponse);
+  rpc Health(HealthRequest) returns (HealthResponse);
 }
