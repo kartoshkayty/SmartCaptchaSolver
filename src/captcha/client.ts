@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { WebSocketServer } from "ws";
 import WebSocket from "ws";
 import { SuccessMessage } from "../types/messages/Success.js";
+import { hostname } from "node:os";
 
 if (!parentPort) {
   throw new Error("Launched without worker!");
@@ -56,7 +57,10 @@ new (class Client {
       headless: false,
       viewport: null,
 
-      executablePath: join(import.meta.dirname, "..", "..", "bin", "chrome"),
+      executablePath:
+        hostname() === "nixos"
+          ? join(import.meta.dirname, "..", "..", "bin", "chrome")
+          : undefined,
 
       proxy: {
         server: `socks5://${message.proxy}`,
