@@ -105,11 +105,17 @@ new (class Client {
 
     readyTimeout = setTimeout(() => {
       clearTimeout(callbackTimeout);
-      throw new UnsolvableError("Ready timeout reached!");
+      parentPort!.postMessage(
+        new ErrorMessage(ErrorType.UNSOLVABLE, "Ready timeout reached!"),
+      );
+      return;
     }, 15_000);
 
     callbackTimeout = setTimeout(() => {
-      throw new UnsolvableError("Callback timeout reached!");
+      parentPort!.postMessage(
+        new ErrorMessage(ErrorType.UNSOLVABLE, "Callback timeout reached!"),
+      );
+      return;
     }, 40_000);
 
     switch (parsed.event) {
@@ -129,7 +135,10 @@ new (class Client {
 
   private async onCallback(token?: string) {
     if (!token) {
-      throw new Error("Returned token is null!");
+      parentPort!.postMessage(
+        new ErrorMessage(ErrorType.UNKNOWN, "Returned token is null!"),
+      );
+      return;
     }
 
     await this.context.close();
