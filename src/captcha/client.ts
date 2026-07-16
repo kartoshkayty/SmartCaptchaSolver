@@ -103,15 +103,22 @@ new (class Client {
     let readyTimeout: NodeJS.Timeout;
     let callbackTimeout: NodeJS.Timeout;
 
-    readyTimeout = setTimeout(() => {
+    readyTimeout = setTimeout(async () => {
       clearTimeout(callbackTimeout);
+
+      await this.context.close();
+      await new Promise<void>((resolve) => this.ws.close(() => resolve()));
+
       parentPort!.postMessage(
         new ErrorMessage(ErrorType.UNSOLVABLE, "Ready timeout reached!"),
       );
       return;
     }, 15_000);
 
-    callbackTimeout = setTimeout(() => {
+    callbackTimeout = setTimeout(async () => {
+      await this.context.close();
+      await new Promise<void>((resolve) => this.ws.close(() => resolve()));
+
       parentPort!.postMessage(
         new ErrorMessage(ErrorType.UNSOLVABLE, "Callback timeout reached!"),
       );
@@ -134,15 +141,15 @@ new (class Client {
   }
 
   private async onCallback(token?: string) {
+    await this.context.close();
+    await new Promise<void>((resolve) => this.ws.close(() => resolve()));
+
     if (!token) {
       parentPort!.postMessage(
         new ErrorMessage(ErrorType.UNKNOWN, "Returned token is null!"),
       );
       return;
     }
-
-    await this.context.close();
-    await new Promise<void>((resolve) => this.ws.close(() => resolve()));
 
     parentPort!.postMessage(new SuccessMessage(token));
 
