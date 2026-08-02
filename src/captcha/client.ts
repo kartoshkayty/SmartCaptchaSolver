@@ -18,6 +18,9 @@ new (class Client {
   private page!: Page;
   private ws!: WebSocketServer;
 
+  private callbackTimeout!: NodeJS.Timeout;
+  private readyTimeout!: NodeJS.Timeout;
+
   constructor() {
     parentPort!.once("message", async (raw: unknown) => {
       const message = Object.assign(new SolveMessage("", "", ""), raw);
@@ -93,18 +96,8 @@ new (class Client {
       socket.on("message", (data) => this.onMessage(data));
     });
 
-    await this.page.goto(`http://${message.hostname}:1488`);
-  }
-
-  private async onMessage(raw: WebSocket.RawData) {
-    const data = raw.toString("utf8");
-    const parsed = JSON.parse(data);
-
-    let readyTimeout: NodeJS.Timeout;
-    let callbackTimeout: NodeJS.Timeout;
-
-    readyTimeout = setTimeout(async () => {
-      clearTimeout(callbackTimeout);
+    this.readyTimeout = setTimeout(async () => {
+      clearTimeout(this.callbackTimeout);
 
       await this.context.close();
       await new Promise<void>((resolve) => this.ws.close(() => resolve()));
@@ -115,7 +108,7 @@ new (class Client {
       return;
     }, 15_000);
 
-    callbackTimeout = setTimeout(async () => {
+    this.callbackTimeout = setTimeout(async () => {
       await this.context.close();
       await new Promise<void>((resolve) => this.ws.close(() => resolve()));
 
@@ -125,15 +118,22 @@ new (class Client {
       return;
     }, 40_000);
 
+    await this.page.goto(`http://${message.hostname}:1488`);
+  }
+
+  private async onMessage(raw: WebSocket.RawData) {
+    const data = raw.toString("utf8");
+    const parsed = JSON.parse(data);
+
     switch (parsed.event) {
       case "READY": {
-        clearTimeout(readyTimeout);
+        clearTimeout(this.readyTimeout);
         this.onReady();
         break;
       }
 
       case "CALLBACK": {
-        clearTimeout(callbackTimeout);
+        clearTimeout(this.callbackTimeout);
         this.onCallback(parsed.token);
         break;
       }
