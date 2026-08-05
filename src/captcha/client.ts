@@ -171,11 +171,14 @@ new (class Client {
 
     // await this.page.mouse.click(x, y);
 
-    await this.page.mouse.move(36, 49);
-    await this.page.mouse.down();
+    await this.page.mouse.click(28, 34);
 
-    await this.page.mouse.move(259, 37);
-    await this.page.mouse.up();
+    // For yandex smart captcha
+    // await this.page.mouse.move(36, 49);
+    // await this.page.mouse.down();
+
+    // await this.page.mouse.move(259, 37);
+    // await this.page.mouse.up();
   }
 
   private log(message: string) {

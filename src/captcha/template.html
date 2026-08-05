@@ -1,7 +1,12 @@
 <!doctype html>
 <html>
   <body style="margin: 0">
-    <div style="max-width: max-content" id="turnstile-widget"></div>
+    <div id="popa" style="max-width: max-content">
+      <!-- <cap-widget
+        id="cap"
+        data-cap-api-endpoint="https://cap.millida.org/09c07b9af6/"
+      ></cap-widget> -->
+    </div>
 
     <script>
       const ws = new WebSocket(`ws://${window.c_hostname}:1490/callback`);
@@ -9,27 +14,33 @@
       ws.onopen = () => {
         console.log("socket opened, loading captcha script...");
 
+        const popaContainer = document.getElementById("popa");
+        const widget = document.createElement("cap-widget");
+        widget.setAttribute("id", "cap");
+        widget.setAttribute(
+          "data-cap-api-endpoint",
+          `https://cap.millida.org/${window.sitekey}/`,
+        );
+
+        popaContainer.appendChild(widget);
+
         const script = document.createElement("script");
-        script.src =
-          "https://smartcaptcha.cloud.yandex.ru/captcha.js?render=onload&onload=onloadFunction";
+        script.src = "https://cdn.jsdelivr.net/npm/@cap.js/widget";
+
+        script.onload = () => {
+          setTimeout(() => ready(), 5_500);
+        };
 
         document.body.appendChild(script);
       };
 
-      function onloadFunction() {
-        if (!window.smartCaptcha) return;
+      function ready() {
+        ws.send(JSON.stringify({ event: "READY" }));
 
-        const container = document.getElementById("turnstile-widget");
-
-        const widgetId = window.smartCaptcha.render(container, {
-          sitekey: window.sitekey,
-          hl: "ru",
-          callback: (token) => {
-            ws.send(JSON.stringify({ event: "CALLBACK", token }));
-          },
+        const capWidget = document.getElementById("cap");
+        capWidget.addEventListener("solve", (e) => {
+          ws.send(JSON.stringify({ event: "CALLBACK", token: e.detail.token }));
         });
-
-        setTimeout(() => ws.send(JSON.stringify({ event: "READY" })), 5_500);
       }
     </script>
   </body>
